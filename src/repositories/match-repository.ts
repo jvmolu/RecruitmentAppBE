@@ -195,7 +195,7 @@ class MatchRepository extends BaseRepository {
     try {
       const searchQueryFields: QueryFields = this.createSearchFields(fields);
       const { query, params } = QueryBuilder.buildDeleteQuery(DbTable.MATCHES, searchQueryFields);
-      return await this.executeQuery<Match>(query, params, client);
+      return await this.executeQuery<MatchType>(query, params, client);
     } catch (error: any) {
         return {
             error,

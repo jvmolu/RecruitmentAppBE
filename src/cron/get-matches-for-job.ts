@@ -17,7 +17,7 @@ const INTERVAL = parseInt(process.env.MATCH_UPDATE_INTERVAL || "60000"); // mill
 class CronService {
     
     @Transactional()
-    private static async updateMatchesForAllJobs(client?: PoolClient) {
+    private static async updateMatchesForAllJobs(client?: PoolClient): Promise<GeneralAppResponse<void>> {
 
         // Get all jobs
         const jobsResponse = await JobService.findByParams({}, {});
@@ -36,6 +36,7 @@ class CronService {
         }
 
         await Promise.all(matchUpdatePromises);
+        return { success: true, data: undefined };
     }
 
     public static async runCronJob() {

@@ -218,6 +218,8 @@ export class JobService {
             return deleteMatchesResponse;
         }
 
+        console.log("Deleted Matches for Job: ", jobId);
+
         const matches: GeneralAppResponse<{
             jobId: string;
             candidates: {
