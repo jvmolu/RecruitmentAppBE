@@ -89,7 +89,7 @@ export class MatchService {
     return await this.repository.findByParams(validationResult.data, searchParamsValidationResult.data as MatchSearchParams);
   }
 
-  private static async deleteByParams(matchSearchOptions: Partial<MatchSearchOptions>): Promise<GeneralAppResponse<MatchType[]>> {
+  public static async deleteByParams(matchSearchOptions: Partial<MatchSearchOptions>, client?: PoolClient): Promise<GeneralAppResponse<MatchType[]>> {
     const validationResult = MatchSearchSchema.partial().safeParse(matchSearchOptions);
     if (!validationResult.success) {
       const error = validationResult.error as ZodParsingError;
@@ -102,6 +102,6 @@ export class MatchService {
       };
     }
 
-    return await this.repository.deleteByParams(validationResult.data);
+    return await this.repository.deleteByParams(validationResult.data, client);
   }
 }

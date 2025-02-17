@@ -187,6 +187,7 @@ export class JobService {
         return updateResponse;
     }
 
+    @Transactional()
     public static async getMatchesForJob(jobId: string, threshold?: number, client?: PoolClient): Promise<GeneralAppResponse<MatchType[]>> {
 
         if(!jobId) {
@@ -209,6 +210,12 @@ export class JobService {
                 businessMessage: 'Invalid threshold value',
                 error: new Error('Invalid threshold value') as BadRequestError
             };
+        }
+
+        // Delete Existing Matches for this job
+        const deleteMatchesResponse = await MatchService.deleteByParams({ jobId }, client);
+        if(isGeneralAppFailureResponse(deleteMatchesResponse)) {
+            return deleteMatchesResponse;
         }
 
         const matches: GeneralAppResponse<{
@@ -240,6 +247,7 @@ export class JobService {
             data: createMatchResult.data,
         };
     }
+
 
     public static fetchAndRemoveJobFields(sourceFields: any): Partial<JobSearchOptions> {
         const jobCols: string[] = ['workModel', 'jobType', 'location', 'title'];
