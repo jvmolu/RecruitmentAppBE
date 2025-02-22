@@ -178,6 +178,27 @@ export class InterviewRepository extends BaseRepository {
 		}
 	}
 
+	async dropExpiredInterviews(client?: PoolClient): Promise<GeneralAppResponse<InterviewType[]>> {
+		const query = `
+                UPDATE interviews 
+                SET status = 'DROPPED' 
+                WHERE status = 'IN_PROGRESS' 
+                AND started_at < NOW() - INTERVAL '1 hour' 
+				RETURNING *;
+            `;
+		try {
+			return await this.executeQuery<InterviewType>(query, [], client);
+		}
+		catch (error: any) {
+			return {
+				error,
+				statusCode: HttpStatusCode.INTERNAL_SERVER_ERROR,
+				businessMessage: 'Failed to update interview statuses',
+				success: false,
+			};
+		}
+	}
+
 	private createSearchFields(interviewFields: Partial<InterviewSearchOptions>, tableAlias?: string): QueryFields {
 
 		const queryFields: QueryFields = {};

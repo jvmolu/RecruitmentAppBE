@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS interview_questions (
     id UUID PRIMARY KEY,
     interview_id UUID NOT NULL REFERENCES interviews(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
-    estimated_time_minutes INTEGER NOT NULL DEFAULT 4,
+    estimated_time_minutes INTEGER NOT NULL DEFAULT 5,
     answer TEXT,
     video_link TEXT,
     sequence_number INTEGER NOT NULL,
@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS interview_questions (
     total_marks INTEGER NOT NULL DEFAULT 0,
     obtained_marks INTEGER NOT NULL DEFAULT 0,
     is_checked BOOLEAN NOT NULL DEFAULT false,
-
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(interview_id, sequence_number)
@@ -41,3 +40,14 @@ CREATE INDEX IF NOT EXISTS idx_interviews_job_id ON interviews(job_id);
 CREATE INDEX IF NOT EXISTS idx_interviews_candidate_id ON interviews(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_interviews_application_id ON interviews(application_id);
 CREATE INDEX IF NOT EXISTS idx_interview_questions_interview_id ON interview_questions(interview_id);
+
+
+-- interviews-2.sql
+
+-- interview_status add dropped status
+ALTER TYPE interview_status ADD VALUE 'DROPPED';
+
+-- Index on interview status and started_at
+CREATE INDEX IF NOT EXISTS idx_interviews_status ON interviews(status);
+CREATE INDEX IF NOT EXISTS idx_interviews_started_at ON interviews(started_at);
+CREATE INDEX IF NOT EXISTS idx_interviews_status_started_at ON interviews(status, started_at);
