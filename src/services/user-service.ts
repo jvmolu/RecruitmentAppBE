@@ -86,7 +86,7 @@ export class UserService {
 
         // Remove password from the response
         let {password, ...userDataResponse} = response.data;
-        let generateTokenOutput: GeneralAppResponse<string> = generateJWTToken(userDataResponse.id);        
+        let generateTokenOutput: GeneralAppResponse<string> = await generateJWTToken(userDataResponse.id);
         if(isGeneralAppFailureResponse(generateTokenOutput)) {
             return generateTokenOutput;
         }
@@ -137,7 +137,7 @@ export class UserService {
         const isPasswordMatched = await comparePassword(userData.password, user.password);
         if (isPasswordMatched) {
             let {password, ...userDataResponse} = user;
-            let generateTokenOutput: GeneralAppResponse<string> = generateJWTToken(userDataResponse.id);
+            let generateTokenOutput: GeneralAppResponse<string> = await generateJWTToken(userDataResponse.id);
             if(isGeneralAppFailureResponse(generateTokenOutput)) {
                 return generateTokenOutput;
             }
