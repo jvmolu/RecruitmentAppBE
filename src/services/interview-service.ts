@@ -163,7 +163,7 @@ export class InterviewService {
           category: "Technical",
           totalMarks: 10
       }
-      const questionsConfig = Array.from({length: 3}, () => dummyConfig);
+      const questionsConfig = Array.from({length: 2}, () => dummyConfig);
 
       const questions: GeneralAppResponse<AIQuestion[]> = await AiService.generateInterviewQuestions(
           parsedResume,
@@ -172,12 +172,27 @@ export class InterviewService {
           [],
           questionsConfig
       );
-
       if(isGeneralAppFailureResponse(questions)) {
           return questions;
       }
 
-      const interviewQuestionsDb: InterviewQuestionType[] = questions.data.map((question, index) => {
+      // Prepare a introductory question - Introduce yourself
+      const introQuestion: InterviewQuestionType = {
+          id: uuidv4(),
+          interviewId: interviewData.id,
+          totalMarks: 10,
+          obtainedMarks: 0,
+          isChecked: false,
+          questionText: "Please give a brief introduction about yourself",
+          sequenceNumber: 1,
+          isAiGenerated: false,
+          estimatedTimeMinutes: 5,
+          category: "Introduction",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+      };
+
+      let interviewQuestionsDb: InterviewQuestionType[] = questions.data.map((question, index) => {
           return {
               id: uuidv4(),
               interviewId: interviewData.id,
@@ -185,7 +200,7 @@ export class InterviewService {
               obtainedMarks: 0,
               isChecked: false,
               questionText: question.question,
-              sequenceNumber: index + 1,
+              sequenceNumber: index + 1 + 1, // +1 for the intro question
               isAiGenerated: true,
               estimatedTimeMinutes: questionsConfig[index].expectedTimeToAnswer,
               category: questionsConfig[index].category,
@@ -193,6 +208,8 @@ export class InterviewService {
               updatedAt: new Date().toISOString()
           };
       });
+
+      interviewQuestionsDb = [introQuestion, ...interviewQuestionsDb];
 
       // Save the questions in the database
       const interviewQuesRes = await this.interviewQuestionRepository.createInterviewQuestions(interviewQuestionsDb, client);
@@ -607,6 +624,14 @@ export class InterviewService {
         updatedAt: new Date().toISOString(),
       };
 
+      // IF this is last question
+      if(nextSequenceNumber === totalQuestionsToAsk) {
+        placeholderQuestion.questionText = "Please provide some feedback on the interview process";
+        placeholderQuestion.estimatedTimeMinutes = 5;
+        placeholderQuestion.category = "Feedback";
+        placeholderQuestion.totalMarks = 10;
+      }
+
       // Insert placeholder row to reserve sequenceNumber
       const placeholderResult = await this.interviewQuestionRepository.createInterviewQuestions([placeholderQuestion], client);
       if (isGeneralAppFailureResponse(placeholderResult)) {
@@ -654,6 +679,11 @@ export class InterviewService {
               client
             );
 
+            return;
+          }
+
+          // CHECK IF WE ARE GENERATING THE LAST QUESTON.. IF YES, THEN DONT CALL AI - IT IS HARDCODED ABOVE
+          if(nextSequenceNumber === totalQuestionsToAsk) {
             return;
           }
 
